@@ -102,6 +102,47 @@
     }
   </style>
 </head>
+<script>
+  // 1) Put your Calendly link here
+  const CALENDLY_URL = "https://calendly.com/YOUR_CALENDLY_LINK";
+
+  // 2) Put your Google Form "formResponse" endpoint here
+  // Example format:
+  // https://docs.google.com/forms/d/e/FORM_ID/formResponse
+  const GOOGLE_FORM_ACTION = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse";
+
+  // 3) Map these to your Google Form entry IDs (from the prefilled link)
+  const ENTRY = {
+    name: "entry.1111111111",
+    email: "entry.2222222222",
+    phone: "entry.3333333333",
+    interest: "entry.4444444444",
+    message: "entry.5555555555"
+  };
+
+  document.getElementById("leadForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const data = new URLSearchParams();
+    data.append(ENTRY.name, form.name.value);
+    data.append(ENTRY.email, form.email.value);
+    data.append(ENTRY.phone, form.phone.value);
+    data.append(ENTRY.interest, form.interest.value);
+    data.append(ENTRY.message, form.message.value || "");
+
+    // Fire-and-forget submit to Google Forms (no CORS issues by using no-cors)
+    fetch(GOOGLE_FORM_ACTION, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: data.toString()
+    }).finally(() => {
+      // Redirect to Calendly immediately after submit
+      window.location.href = CALENDLY_URL;
+    });
+  });
+</script>
 
 <body>
   <div class="wrap">
@@ -116,43 +157,44 @@
         Apply for bootcamps, online training, or request a private coaching call.
       </p>
 
-      <form
-        action="mailto:YOUR_EMAIL_HERE"
-        method="POST"
-        enctype="text/plain"
-        class="form"
-      >
-        <label>
-          Name
-          <input type="text" name="Name" required />
-        </label>
+     <form id="leadForm" class="form">
+  <label>
+    Name
+    <input type="text" name="name" required />
+  </label>
 
-        <label>
-          Email
-          <input type="email" name="Email" required />
-        </label>
+  <label>
+    Email
+    <input type="email" name="email" required />
+  </label>
 
-        <label>
-          Interested In
-          <select name="Interest" required>
-            <option value="">Select one</option>
-            <option>AI Bootcamp</option>
-            <option>Online Training</option>
-            <option>1-on-1 Coaching Call</option>
-          </select>
-        </label>
+  <label>
+    Phone
+    <input type="tel" name="phone" required placeholder="(555) 555-5555" />
+  </label>
 
-        <label>
-          Message
-          <textarea
-            name="Message"
-            placeholder="Briefly describe what you're looking for"
-            rows="4"
-          ></textarea>
-        </label>
+  <label>
+    Interested In
+    <select name="interest" required>
+      <option value="">Select one</option>
+      <option>AI Bootcamp</option>
+      <option>Online Training</option>
+      <option>1-on-1 Coaching Call</option>
+    </select>
+  </label>
 
-        <button type="submit">Submit Application</button>
-      </form>
+  <label>
+    Message
+    <textarea
+      name="message"
+      placeholder="Briefly describe what you're looking for"
+      rows="4"
+    ></textarea>
+  </label>
+
+  <button type="submit">Continue to Scheduling</button>
+</form>
+
 
     </div>
   </div>
