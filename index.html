@@ -188,65 +188,50 @@
     </div>
   </div>
 
-  <script>
-    /**
-     * ✅ REQUIRED SETUP (free + reliable)
-     *
-     * 1) Create a Google Form with these 5 fields:
-     *    Name, Email, Phone, Interested In, Message
-     *
-     * 2) Get:
-     *    - GOOGLE_FORM_ACTION: looks like
-     *      https://docs.google.com/forms/d/e/FORM_ID/formResponse
-     *    - entry IDs: entry.######## for each field
-     *
-     * 3) Put your Calendly URL.
-     */
-
-    // 🔴 Put your Calendly link here
+<script>
+  // Redirect destination (Calendly)
   const CALENDLY_URL = "https://calendly.com/mbayingana777/consultation";
 
+  // Google Form endpoint (must end with /formResponse)
+  const GOOGLE_FORM_ACTION =
+    "https://docs.google.com/forms/d/e/1FAIpQLSfVHuib_V9ezKdQz8PHMZVPRxwo5SrK4R9gwsvnoYkJoxRIlg/formResponse";
 
-    // 🔴 Put your Google Form endpoint here (must end with /formResponse)
-   const GOOGLE_FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSfVHuib_V9ezKdQz8PHMZVPRxwo5SrK4R9gwsvnoYkJoxRIlg/formResponse";
+  // Google Form entry IDs (from your pre-filled link)
+  const ENTRY = {
+    name: "entry.27076484",
+    email: "entry.1770136219",
+    phone: "entry.337117981",
+    interest: "entry.932432933",
+    message: "entry.684929870"
+  };
 
+  const form = document.getElementById("leadForm");
+  const btn = document.getElementById("submitBtn");
 
-    // 🔴 Replace these with your real entry IDs from Google Form
-    const ENTRY = {
-      name: "entry.1111111111",
-      email: "entry.2222222222",
-      phone: "entry.3333333333",
-      interest: "entry.4444444444",
-      message: "entry.5555555555"
-    };
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
 
-    const form = document.getElementById("leadForm");
-    const btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
 
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
+    const data = new URLSearchParams();
+    data.append(ENTRY.name, form.name.value.trim());
+    data.append(ENTRY.email, form.email.value.trim());
+    data.append(ENTRY.phone, form.phone.value.trim());
+    data.append(ENTRY.interest, form.interest.value);
+    data.append(ENTRY.message, (form.message.value || "").trim());
 
-      btn.disabled = true;
-      btn.textContent = "Submitting...";
-
-      const data = new URLSearchParams();
-      data.append(ENTRY.name, form.name.value.trim());
-      data.append(ENTRY.email, form.email.value.trim());
-      data.append(ENTRY.phone, form.phone.value.trim());
-      data.append(ENTRY.interest, form.interest.value);
-      data.append(ENTRY.message, (form.message.value || "").trim());
-
-      fetch(GOOGLE_FORM_ACTION, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: data.toString()
-      }).finally(() => {
-        // Redirect to Calendly right after submit
-        window.location.href = CALENDLY_URL;
-      });
+    fetch(GOOGLE_FORM_ACTION, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: data.toString()
+    }).finally(() => {
+      window.location.href = CALENDLY_URL;
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
 
