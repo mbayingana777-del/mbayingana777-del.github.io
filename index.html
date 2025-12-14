@@ -22,6 +22,7 @@
     }
 
     .card {
+      width: 100%;
       max-width: 720px;
       background: #161616;
       border-radius: 18px;
@@ -32,22 +33,25 @@
     h1 {
       font-size: 42px;
       margin: 0;
+      letter-spacing: -0.02em;
     }
 
     h2 {
       font-size: 24px;
       margin: 24px 0 8px;
+      letter-spacing: -0.01em;
     }
 
     p {
       font-size: 18px;
       line-height: 1.6;
       opacity: 0.9;
+      margin: 0;
     }
 
     .muted {
       opacity: 0.7;
-      margin-bottom: 20px;
+      margin: 0 0 20px;
     }
 
     .divider {
@@ -59,6 +63,7 @@
     .form {
       display: grid;
       gap: 14px;
+      margin-top: 6px;
     }
 
     label {
@@ -79,11 +84,28 @@
       font-size: 14px;
     }
 
+    input::placeholder,
+    textarea::placeholder {
+      color: rgba(245,245,245,0.45);
+    }
+
     input:focus,
     select:focus,
     textarea:focus {
       outline: none;
       border-color: #555;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 1fr; }
+      .card { padding: 26px; }
+      h1 { font-size: 36px; }
     }
 
     button {
@@ -98,51 +120,16 @@
     }
 
     button:hover {
-      opacity: 0.9;
+      opacity: 0.92;
+    }
+
+    .tiny {
+      font-size: 13px;
+      opacity: 0.6;
+      margin-top: 6px;
     }
   </style>
 </head>
-<script>
-  // 1) Put your Calendly link here
-  const CALENDLY_URL = "https://calendly.com/YOUR_CALENDLY_LINK";
-
-  // 2) Put your Google Form "formResponse" endpoint here
-  // Example format:
-  // https://docs.google.com/forms/d/e/FORM_ID/formResponse
-  const GOOGLE_FORM_ACTION = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse";
-
-  // 3) Map these to your Google Form entry IDs (from the prefilled link)
-  const ENTRY = {
-    name: "entry.1111111111",
-    email: "entry.2222222222",
-    phone: "entry.3333333333",
-    interest: "entry.4444444444",
-    message: "entry.5555555555"
-  };
-
-  document.getElementById("leadForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const form = e.target;
-    const data = new URLSearchParams();
-    data.append(ENTRY.name, form.name.value);
-    data.append(ENTRY.email, form.email.value);
-    data.append(ENTRY.phone, form.phone.value);
-    data.append(ENTRY.interest, form.interest.value);
-    data.append(ENTRY.message, form.message.value || "");
-
-    // Fire-and-forget submit to Google Forms (no CORS issues by using no-cors)
-    fetch(GOOGLE_FORM_ACTION, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: data.toString()
-    }).finally(() => {
-      // Redirect to Calendly immediately after submit
-      window.location.href = CALENDLY_URL;
-    });
-  });
-</script>
 
 <body>
   <div class="wrap">
@@ -157,47 +144,107 @@
         Apply for bootcamps, online training, or request a private coaching call.
       </p>
 
-     <form id="leadForm" class="form">
-  <label>
-    Name
-    <input type="text" name="name" required />
-  </label>
+      <form id="leadForm" class="form">
+        <div class="row">
+          <label>
+            Name
+            <input type="text" name="name" required />
+          </label>
 
-  <label>
-    Email
-    <input type="email" name="email" required />
-  </label>
+          <label>
+            Phone
+            <input type="tel" name="phone" required placeholder="(555) 555-5555" />
+          </label>
+        </div>
 
-  <label>
-    Phone
-    <input type="tel" name="phone" required placeholder="(555) 555-5555" />
-  </label>
+        <label>
+          Email
+          <input type="email" name="email" required />
+        </label>
 
-  <label>
-    Interested In
-    <select name="interest" required>
-      <option value="">Select one</option>
-      <option>AI Bootcamp</option>
-      <option>Online Training</option>
-      <option>1-on-1 Coaching Call</option>
-    </select>
-  </label>
+        <label>
+          Interested In
+          <select name="interest" required>
+            <option value="">Select one</option>
+            <option>AI Bootcamp</option>
+            <option>Online Training</option>
+            <option>1-on-1 Coaching Call</option>
+          </select>
+        </label>
 
-  <label>
-    Message
-    <textarea
-      name="message"
-      placeholder="Briefly describe what you're looking for"
-      rows="4"
-    ></textarea>
-  </label>
+        <label>
+          Message
+          <textarea
+            name="message"
+            placeholder="Briefly describe what you're looking for"
+            rows="4"
+          ></textarea>
+        </label>
 
-  <button type="submit">Continue to Scheduling</button>
-</form>
-
+        <button type="submit" id="submitBtn">Continue to Scheduling</button>
+        <div class="tiny">After submitting, you’ll be redirected to schedule your call.</div>
+      </form>
 
     </div>
   </div>
+
+  <script>
+    /**
+     * ✅ REQUIRED SETUP (free + reliable)
+     *
+     * 1) Create a Google Form with these 5 fields:
+     *    Name, Email, Phone, Interested In, Message
+     *
+     * 2) Get:
+     *    - GOOGLE_FORM_ACTION: looks like
+     *      https://docs.google.com/forms/d/e/FORM_ID/formResponse
+     *    - entry IDs: entry.######## for each field
+     *
+     * 3) Put your Calendly URL.
+     */
+
+    // 🔴 Put your Calendly link here
+    const CALENDLY_URL = "https://calendly.com/YOUR-CALENDLY-LINK";
+
+    // 🔴 Put your Google Form endpoint here (must end with /formResponse)
+    const GOOGLE_FORM_ACTION = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse";
+
+    // 🔴 Replace these with your real entry IDs from Google Form
+    const ENTRY = {
+      name: "entry.1111111111",
+      email: "entry.2222222222",
+      phone: "entry.3333333333",
+      interest: "entry.4444444444",
+      message: "entry.5555555555"
+    };
+
+    const form = document.getElementById("leadForm");
+    const btn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      btn.disabled = true;
+      btn.textContent = "Submitting...";
+
+      const data = new URLSearchParams();
+      data.append(ENTRY.name, form.name.value.trim());
+      data.append(ENTRY.email, form.email.value.trim());
+      data.append(ENTRY.phone, form.phone.value.trim());
+      data.append(ENTRY.interest, form.interest.value);
+      data.append(ENTRY.message, (form.message.value || "").trim());
+
+      fetch(GOOGLE_FORM_ACTION, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: data.toString()
+      }).finally(() => {
+        // Redirect to Calendly right after submit
+        window.location.href = CALENDLY_URL;
+      });
+    });
+  </script>
 </body>
 </html>
 
